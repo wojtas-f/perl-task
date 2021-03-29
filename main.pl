@@ -27,6 +27,47 @@ sub checkForOrderNumber{
     }
 }
 
+sub checkForDeliveryDate{
+   my ( $line ) = @_;
+   #Odczytanie daty dostawy
+    if($line =~ /DATA DOSTAWY/){
+        if($line =~ /[0-9-]+/){ 
+            $new_order->setDELIVERY_DATE($&);
+        }
+    }
+}
+
+sub checkForNIP{
+   my ( $line ) = @_;
+   #Odzczytanie numeru NIP odbiorcy
+    if($line =~ /NIP/){
+        if( $line =~/[0-9]+/){
+            $new_order->setNIP($&);
+        }
+    }
+}
+
+sub checkForPayer{
+   my ( $line ) = @_;
+       #Odczytanie nazwy płatnika
+    if($line =~ /PLATNIK/){
+        if( $line =~/\b(?!PLATNIK)\b([A-Z]+\s[A-Z]+|[A-Z]+)/){
+            $new_order->setPayer($&);
+        }
+    }
+}
+
+sub checkForPayer{
+   my ( $line ) = @_;
+       #Odczytanie nazwy płatnika
+    if($line =~ /PLATNIK/){
+        if( $line =~/\b(?!PLATNIK)\b([A-Z]+\s[A-Z]+|[A-Z]+)/){
+            $new_order->setPayer($&);
+        }
+    }
+}
+
+
 sub parseLineFromFile {
    my ( $line ) = @_;
    if ($MANUFACTURER eq "")
