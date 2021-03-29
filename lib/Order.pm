@@ -3,25 +3,42 @@ package Order;
 sub new {
    my $class = shift;
    my $self = {
-      _MANUFACTURER => shift,
       _ORDER_NUMBER  => shift,
+      _NIP  => shift,
+      _DELIVERY_DATE  => shift,
+      _PAYER  => shift,
+      _RECEIVER_NAME  => shift,
    };
-   # Print all the values just for clarification.
-   print "MANUFACTURER is $self->{_MANUFACTURER}\n";
-   print "ORDER_NUMBER is $self->{_ORDER_NUMBER}\n";
    bless $self, $class;
    return $self;
 }
-#MANUFACTURER
-sub setMANUFACTURER {
-   my ( $self, $MANUFACTURER ) = @_;
-   $self->{_MANUFACTURER} = $MANUFACTURER if defined($MANUFACTURER);
-   return $self->{_MANUFACTURER};
+
+#RECEIVER_NAME
+sub setRECEIVER_NAME {
+   my ( $self, $RECEIVER_NAME ) = @_;
+   $self->{_RECEIVER_NAME} = $RECEIVER_NAME if defined($RECEIVER_NAME);
+   return $self->{_RECEIVER_NAME};
 }
 
-sub getMANUFACTURER {
-   my( $self ) = @_;
-   return $self->{_MANUFACTURER};
+#DELIVERY_DATE
+sub setDELIVERY_DATE {
+   my ( $self, $DELIVERY_DATE ) = @_;
+   $self->{__DELIVERY_DATE} = $DELIVERY_DATE if defined($DELIVERY_DATE);
+   return $self->{_DELIVERY_DATE};
+}
+
+#NIP
+sub setNIP {
+   my ( $self, $NIP ) = @_;
+   $self->{_NIP} = $NIP if defined($NIP);
+   return $self->{_NIP};
+}
+
+#PAYER
+sub setPayer {
+   my ( $self, $PAYER ) = @_;
+   $self->{_PAYER} = $PAYER if defined($PAYER);
+   return $self->{_PAYER};
 }
 
 #ORDER_NUMBER
@@ -31,8 +48,4 @@ sub setORDER_NUMBER {
    return $self->{_ORDER_NUMBER};
 }
 
-sub getORDER_NUMBER {
-   my( $self ) = @_;
-   return $self->{_ORDER_NUMBER};
-}
 1;

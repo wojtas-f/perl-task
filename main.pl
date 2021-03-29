@@ -5,13 +5,44 @@ use autodie; # die if problem reading or writing a file
 use lib 'lib';
 use Order;
 
- open(FILE, "zamowienia.eml");
- while (<FILE>) {
-   print $_;
- }
+my $MANUFACTURER = '';
 
- my $new_order = new Order( "UNIMA SP. Z O.O.", "|3827467");
-print 'New order';
-print $new_order->getMANUFACTURER();
+sub checkForManufacturer {
+   my ( $line ) = @_;
 
- close FILE;
+   #Odczytanie nazwy prducenta
+    if($line =~/\*+/){
+        if($line =~ /(?!\*)\b(?!ZAMOWIENIA)\b[A-Z]+/){
+            $MANUFACTURER = $&;
+        }
+    }
+}
+
+sub checkForOrderNumber{
+   my ( $line ) = @_;
+       if($line =~ /NR ZAMOWIENIE/){
+        if( $line =~/[0-9]+/){
+         $new_order->setORDER_NUMBER($&);
+        }
+    }
+}
+
+sub parseLineFromFile {
+   my ( $line ) = @_;
+   if ($MANUFACTURER eq "")
+   {
+      checkForManufacturer($line);
+   }
+   checkForOrderNumber($line);
+}
+
+my $new_order = new Order();
+
+open(FILE, "zamowienia.eml");
+while (<FILE>) {
+   parseLineFromFile($_)
+}
+
+
+close FILE;
+
