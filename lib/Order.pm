@@ -8,43 +8,86 @@ sub new {
       _DELIVERY_DATE  => shift,
       _PAYER  => shift,
       _RECEIVER_NAME  => shift,
+
    };
    bless $self, $class;
    return $self;
 }
+#RECEIVER_NAME
+sub checkForData {
+   my ( $self, $line ) = @_;
+   $self->setRECEIVER_NAME($line);
+   $self->setDELIVERY_DATE($line);
+   $self->setNIP($line);
+   $self->setPayer($line);
+   $self->setORDER_NUMBER($line);
+}
+
+# sub setNewItem {
+#     my ( $self, $new_item ) = @_;
+#     push($self->_ITEMS, $new_item);
+# }
 
 #RECEIVER_NAME
 sub setRECEIVER_NAME {
-   my ( $self, $RECEIVER_NAME ) = @_;
-   $self->{_RECEIVER_NAME} = $RECEIVER_NAME if defined($RECEIVER_NAME);
-   return $self->{_RECEIVER_NAME};
+   my ( $self, $line ) = @_;
+   if($line =~ /ODBIORCA/){
+        if($line =~/\b(?!ODBIORCA)(?!\|)\b([A-Za-z-0-9]+\s)+/){
+            $self->{_RECEIVER_NAME} = $& if defined($&);
+        }
+    }
 }
 
 #DELIVERY_DATE
 sub setDELIVERY_DATE {
-   my ( $self, $DELIVERY_DATE ) = @_;
-   $self->{__DELIVERY_DATE} = $DELIVERY_DATE if defined($DELIVERY_DATE);
-   return $self->{_DELIVERY_DATE};
+   my ( $self, $line ) = @_;
+   if($line =~ /DATA DOSTAWY/){
+        if($line =~ /[0-9-]+/){ 
+            $self->{_DELIVERY_DATE} = $& if defined($&);
+        }
+    }
 }
 
 #NIP
 sub setNIP {
-   my ( $self, $NIP ) = @_;
-   $self->{_NIP} = $NIP if defined($NIP);
-   return $self->{_NIP};
+   my ( $self, $line ) = @_;
+       if($line =~ /NIP/){
+        if( $line =~/[0-9]+/){
+            $self->{_NIP} = $& if defined($&);
+        }
+    }
 }
 
 #PAYER
 sub setPayer {
-   my ( $self, $PAYER ) = @_;
-   $self->{_PAYER} = $PAYER if defined($PAYER);
-   return $self->{_PAYER};
+   my ( $self, $line ) = @_;
+       if($line =~ /PLATNIK/){
+        if( $line =~/\b(?!PLATNIK)\b([A-Z]+\s[A-Z]+|[A-Z]+)/){
+            $self->{_PAYER} = $& if defined($&);
+        }
+    }
 }
 
 #ORDER_NUMBER
 sub setORDER_NUMBER {
-   my ( $self, $ORDER_NUMBER ) = @_;
-   $self->{_ORDER_NUMBER} = $ORDER_NUMBER if defined($ORDER_NUMBER);
+   my ( $self, $line ) = @_;
+    if($line =~ /NR ZAMOWIENIE/){
+        if( $line =~/[0-9]+/){
+         $self->{_ORDER_NUMBER} = $& if defined($&);
+        }
+    }
+}
+
+#ORDER_NUMBER
+sub print {
+   my ( $self, $line ) = @_;
+   return "$self->{_RECEIVER_NAME};$self->{_DELIVERY_DATE};$self->{_NIP};$self->{_PAYER};$self->{_ORDER_NUMBER}\n";
+
+}
+
+#ORDER_NUMBER
+sub getOrderNumber {
+   my ( $self ) = @_;
    return $self->{_ORDER_NUMBER};
 }
 

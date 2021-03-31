@@ -4,8 +4,12 @@ use strict;
 use autodie; # die if problem reading or writing a file
 use lib 'lib';
 use Order;
+use Item;
 
 my $MANUFACTURER = '';
+my $current_order = new Order();
+my @current_item_list = ();
+my $shortPath = 'c:\Users\wojta\Desktop\perl\zadanie\orders\\';
 
 sub checkForManufacturer {
    my ( $line ) = @_;
@@ -16,74 +20,70 @@ sub checkForManufacturer {
             $MANUFACTURER = $&;
         }
     }
+}  
+
+sub exportToCSV {
+   my $filename = $MANUFACTURER . '_' . $current_order->getOrderNumber() . '.csv';
+   my $savePath = $shortPath . $filename;
+
+   open(NEW_ORDER_FILE,'>',$savePath) or die $!;
+   print NEW_ORDER_FILE $current_order->print();
+   foreach (@current_item_list) {
+      print NEW_ORDER_FILE $_->print();
+	}
+
+   close(NEW_ORDER_FILE);
+
+   $current_order = new Order();
+   @current_item_list = ();
 }
 
-sub checkForOrderNumber{
-   my ( $line ) = @_;
-       if($line =~ /NR ZAMOWIENIE/){
-        if( $line =~/[0-9]+/){
-         $new_order->setORDER_NUMBER($&);
+sub setNewItem {
+    my ( $line ) = @_;
+    my $new_item = new Item();
+        #Odczytanie numeru EAN
+        if($line =~/(?![0-9]\|)(?![0-9]\.[0-9]+)(?![0-9]+\|)([0-9]+)/){
+            $new_item->setEAN($&);
         }
-    }
-}
-
-sub checkForDeliveryDate{
-   my ( $line ) = @_;
-   #Odczytanie daty dostawy
-    if($line =~ /DATA DOSTAWY/){
-        if($line =~ /[0-9-]+/){ 
-            $new_order->setDELIVERY_DATE($&);
+        #Odczytanie ilości towaru
+        if($line =~ /[0-9]+\.[0-9]+/){
+            $new_item->setQUANTITY($&);
         }
-    }
-}
-
-sub checkForNIP{
-   my ( $line ) = @_;
-   #Odzczytanie numeru NIP odbiorcy
-    if($line =~ /NIP/){
-        if( $line =~/[0-9]+/){
-            $new_order->setNIP($&);
+        #Odczytanie nazwy produktu
+        if($line =~ /([A-Za-z]+\s)+/){
+            $new_item->setNAME($&);
         }
-    }
-}
-
-sub checkForPayer{
-   my ( $line ) = @_;
-       #Odczytanie nazwy płatnika
-    if($line =~ /PLATNIK/){
-        if( $line =~/\b(?!PLATNIK)\b([A-Z]+\s[A-Z]+|[A-Z]+)/){
-            $new_order->setPayer($&);
+        #Odczytanie jedsnotki miary
+        if($line=~/sztuka|litr|kg/){
+            $new_item->setUNIT($&);
         }
-    }
+   #  $current_order->setNewItem($new_item);
+    push(@current_item_list, ($new_item));
 }
-
-sub checkForPayer{
-   my ( $line ) = @_;
-       #Odczytanie nazwy płatnika
-    if($line =~ /PLATNIK/){
-        if( $line =~/\b(?!PLATNIK)\b([A-Z]+\s[A-Z]+|[A-Z]+)/){
-            $new_order->setPayer($&);
-        }
-    }
-}
-
 
 sub parseLineFromFile {
    my ( $line ) = @_;
+
    if ($MANUFACTURER eq "")
    {
       checkForManufacturer($line);
    }
-   checkForOrderNumber($line);
-}
 
-my $new_order = new Order();
+   if($line =~ /Koniec zamowienia/){
+      exportToCSV()
+   }
+
+   if($line =~ /[0-9]\|[0-9]+/){
+      setNewItem($line);
+   }
+
+   $current_order->checkForData($line);
+}
 
 open(FILE, "zamowienia.eml");
 while (<FILE>) {
    parseLineFromFile($_)
 }
-
 
 close FILE;
 
